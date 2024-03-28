@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>June's (junedabat#4075) role color setter for Revolt Chat</title>
+</head>
+<header>
+    <h1>June's (junedabat#4075) role color setter for <a href="https://revolt.chat/">Revolt Chat</a></h1>
+</header>
+<body>
+<div id="info-form">
+    <article>
+        <h3>Information</h3>
+        <button style="margin-bottom: 10px;" onclick="toggleYtVid()">How do I fill this out?</button>
+        <iframe id="vidThing" style="margin: 10px; border-radius: 10px;" width="560" height="315" src="https://www.youtube-nocookie.com/embed/BxQC4JNANsE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <br/>
+        <label for="tokeno">Session Token:</label>
+        <input id="tokeno"></input><br/>
+        <label for='servero'>Server ID:</label>
+        <input id="servero"></input><br/>
+        <label for='roleid'>Role ID:</label>
+        <input id="roleid"></input><br/>
+    </article>
+</div>
+<div id = "colors-form">
+    <article id="choice">
+        <h3>Choose your role color setter mode</h3>
+        <input type="radio" id="autoMode" name="mode" value="auto" checked>
+        <label for="autoMode">Auto</label>
+        <input type="radio" id="manualMode" name="mode" value="manual" unchecked>
+        <label for="manualMode">Manual</label>
+    </article>
+    <article id="colors-inner">
+        <h3>Role color options</h3>
+        <div id="autoModestuff"></div>
+        <label for="thecolour">CSS string: </label><input id="thecolour" onchange='changepreview();' disabled></input><br/>
+    </article>
+</div>
+<div id = "preview-span">
+    <article>
+        <h3>Preview:</h3>
+        <div style="font-size: 14px; background-color: #242424; font-family: sans-serif; color: #F6F6F6; display: flex; font-size: 32px; margin: 10px;"</div>
+        <div class="avatar">
+            <img src="https://api.revolt.chat/users/01EX2NCWQ0CHS3QJF0FEQS1GR4/default_avatar" width="32px" height="32px" style="border-radius: 100px" alt="Default avatar">
+        </div>
+        <div class="rest">
+            <span class="top">
+            <span style="font-weight: 600 !important; background-clip: text;" id="nickolor">Testing guy</span>
+            <time style="font-size: 10px; color: #848484">Today at 25:60</time>
+            </span>
+            <div>
+                <p style="margin: 0px;">something dumb idk</p>
+            </div>
+        </div>
+    </article>
+</div>
+
+<article id="notEvenAButton" onclick="changerole()"><label>Edit role</label></article>
+<br/>
+
+<footer>This is an edited version of <a href="https://github.com/dorudolasu">DoruDoLasu</a>'s<a href="https://dorudolasu.github.io/ReductV3/rolecoloursetter.html"> role color setter</a></footer>
+
+<script>
+    //C_Auto class by June
+    class C_Auto {
+        m_colorsTab = [];
+        m_modeColorStops = false;
+        m_presets = [];
+        constructor() {
+            this.addColor();
+        }
+        addPresets() {
+            this.m_presets = [
+                {
+                    id: 'rainbow',
+                    name: 'Rainbow!',
+                    gradient: {
+                        orientation: 90,
+                        colors: ["#ff0000","#ff8000","#ffff00","#00ff00","#0000ff","#ff00ff"]
+                    }
+                },
+                {
+                    id: 'trans',
+                    name: 'Trans Rights!',
+                    gradient: {
+                        orientation: 90,
+                        colors: ["#55CDFC", "#F7BAB8", "#FFFFFF", "#F7BAB8", "#55CDFC"]
+                    }
+                },
+                {
+                    id: 'red',
+                    name: 'Red',
+                    gradient: {
+                        colors: ["#FF0000"]
+                    }
+                },
+                {
+                    id: 'orange',
+                    name: 'Orange',
+                    gradient: {
+                        colors: ["#ff8000"]
+                    }
+                },
+                {
+                    id: 'yellow',
+                    name: 'Yellow',
+                    gradient: {
+                        colors: ["#ffff00"]
+                    }
+                },
+                {
+                    id: 'green',
+                    name: 'Green',
+                    gradient: {
+                        colors: ["#00ff00"]
+                    }
+                },
+                {
+                    id: 'blue',
+                    name: 'Blue',
+                    gradient: {
+                        colors: ["#0000ff"]
+                    }
+                },
+                {
+                    id: 'purple',
+                    name: 'Magenta',
+                    gradient: {
+                        colors: ["#ff00ff"]
+                    }
+                },
+            ];
+            for(let i = 0; i < this.m_presets.length; i++) {
+                document.getElementById('autoModestuff').innerHTML += "<label id='label_"+this.m_presets[i].id+"'><button id='preset_"+this.m_presets[i].id+"' onclick='objAuto.usePreset("+i+")'>"+this.m_presets[i].name+"</button></label>";
+                
+                let style = "#preset_"+this.m_presets[i].id+"{\nbackground: linear-gradient(";
+                if(this.m_presets[i].gradient.colors.length > 1) {
+                    if(this.m_presets[i].gradient.orientation == "90") style += "to right,";
+                    else if(this.m_presets[i].gradient.orientation == "0") style += "to top,";
+                    for(let j = 0; j < this.m_presets[i].gradient.colors.length; j++) {
+                        style += this.m_presets[i].gradient.colors[j];
+                        if(j < this.m_presets[i].gradient.colors.length-1) style += ',';
+                        else style += ");\n -webkit-text-fill-color: transparent;\n-webkit-background-clip: text;\nbackground-clip: text;";
+                    }
+                }
+                else style = "#preset_"+this.m_presets[i].id+"{color: "+this.m_presets[i].gradient.colors[0]+";background: gray;"
+                style += "}#label_"+this.m_presets[i].id+"{background: gray; text-shadow: 1 1 0 black;}";
+                document.getElementById('autoModestuff').innerHTML += "<style>"+style+"</style>";
+            }
+        }
+        usePreset(id) {
+                if(this.m_colorsTab) this.m_colorsTab = [];
+                document.getElementById('colorsList').innerHTML = "";
+                for(let j = 0; j < this.m_presets[id].gradient.colors.length; j++) {
+                    let color = this.m_presets[id].gradient.colors[j];
+                    this.addColor(color);
+                    document.getElementById('sel'+j).value = color;
+                }
+                if(this.m_presets[id].gradient.orientation) document.getElementById("orientationGradient").value = this.m_presets[id].gradient.orientation;
+                this.updateColors();
+        }
+        addColor(color) {
+            let newColorNb = this.m_colorsTab.length;
+            if(!color) color = "#ffffff";
+            this.m_colorsTab.push(color);
+            //Add 1 color input to the page
+            document.getElementById('colorsList').innerHTML +=
+                "<li id='color"+newColorNb+"'>"+
+                    "<label for='sel"+newColorNb+"'>Color #"+(newColorNb+1)+": </label><input onchange='objAuto.modifySingleColor("+newColorNb+")' type='color' value="+color+" id='sel"+newColorNb+"'>"+
+                    "<label id='zoneStops"+newColorNb+"' class='colorStops'></label><br/></li>";
+            this.colorStopsMode();
+            if(this.m_colorsTab.length >= 2) {
+                document.getElementById('minus').style.display = 'inline';
+                document.getElementById('orientationGradient').style.display = 'inline';
+                document.getElementById('stopsModeToggle').style.display = 'inline';
+                document.getElementById('stopsLabel').style.display = 'inline';
+                document.getElementById('orientationGradient').style.display = 'inline';
+                document.getElementById('orientationLabel').style.display = 'inline';
+            }
+            this.updateColors();
+        }
+        colorStopsMode() {
+            if (document.getElementById("stopsModeToggle").checked) {
+                this.m_modeColorStops = true;
+                for(let i = 0; i < this.m_colorsTab.length; i++) {
+                    document.getElementById('zoneStops'+i).innerHTML =
+                    "<label for='stop"+i+"'>Stop color at "+
+                    "<input id='stop"+i+"' type='number' min='0' max='100' value='0' step='1' onchange='objAuto.updateColors()'></input>"+
+                    "%</label>";
+                }
+            }
+            else {
+                this.m_modeColorStops = false;
+                for(let i = 0; i < this.m_colorsTab.length; i++) {
+                    document.getElementById('zoneStops'+i).innerHTML = '';
+                }
+            }
+            this.updateColors();
+        }
+        removeColor() {
+            let length = this.m_colorsTab.length;
+            //Remove 1 color input to the page 
+            const colorSlot = document.getElementById("color"+(length-1));
+            colorSlot.remove();
+            this.m_colorsTab.splice(length-1, 1);
+            if (this.m_colorsTab.length == 1) {
+                document.getElementById('minus').style.display = 'none';
+                document.getElementById('stopsModeToggle').style.display = 'none';
+                document.getElementById('stopsLabel').style.display = 'none';
+                document.getElementById('orientationGradient').style.display = 'none';
+                document.getElementById('orientationLabel').style.display = 'none';
+                
+            }
+            this.updateColors();
+        }
+
+        modifySingleColor(id) {
+            this.m_colorsTab.splice(id, 1, document.getElementById('sel'+id).value);
+            this.updateColors();
+        }
+
+        updateColors() {
+            var length = this.m_colorsTab.length;
+            for(let i = 0; i < length; i++) {
+                document.getElementById('sel'+i).value = this.m_colorsTab[i];
+            }
+            if(this.m_colorsTab.length > 1) {
+                document.getElementById('thecolour').value = "linear-gradient(";
+                document.getElementById('thecolour').value += document.getElementById('orientationGradient').value + "deg, ";
+                for(let i = 0; i < length; i++) {
+                    document.getElementById('thecolour').value += this.m_colorsTab[i];
+                    if(this.m_modeColorStops == true) document.getElementById('thecolour').value += " " + document.getElementById('stop'+i).value + "%";
+                    if(i < length-1) document.getElementById('thecolour').value += ",";
+                }
+                document.getElementById('thecolour').value += ")";
+            }
+            else {
+                document.getElementById('thecolour').value = this.m_colorsTab;
+            }
+            changepreview();
+        }
+    
+    } 
+
+var thekolor = '';
+var thetoken = '';
+var theroleid = '';
+var theserver = '';
+
+function bootAuto() {
+    document.getElementById("thecolour").disabled = true;
+    document.getElementById('autoModestuff').innerHTML = 
+    `
+    <span>Colors: </span><button onclick='objAuto.addColor()'>+</button><button id='minus' onclick='objAuto.removeColor()'>-</button>
+    <br/>`;
+    document.getElementById('autoModestuff').innerHTML += ` 
+    <label id='orientationLabel' for='orientationGradient' >Gradient orientation (°): </label>
+    <input id='orientationGradient' type='number' min='0' max='360' value='90' onchange="objAuto.updateColors()"></input>
+    <br/>
+    <input id='stopsModeToggle' type='checkbox' onchange="objAuto.colorStopsMode()" unchecked>
+    <label id='stopsLabel' for='stopsModeToggle'>(Advanced) Color stops Toggle</label></input>
+    <ul id="colorsList">
+    </ul>`;
+}
+function bootManual() {
+    if(objAuto) objAuto.m_colorsTab = [];
+    document.getElementById('autoModestuff').innerHTML = "";
+    document.getElementById("thecolour").disabled = false;
+}
+
+function changepreview(){
+    document.getElementById("nickolor").setAttribute("style", "background:"+document.getElementById("thecolour").value+"; -webkit-background-clip: text");
+}
+
+function changerole(){
+theroleid = document.getElementById("roleid").value;
+thetoken = document.getElementById("tokeno").value;
+thekolor = document.getElementById("thecolour").value;
+theserver = document.getElementById("servero").value;
+
+if (theroleid != "" && thetoken != "" && thekolor != "" && theserver != ""){
+  var sendo = new XMLHttpRequest();
+  sendo.open("PATCH", "https://api.revolt.chat/servers/"+ theserver + "/roles/" + theroleid, true);
+  sendo.setRequestHeader("x-session-token", thetoken);
+  sendo.setRequestHeader("Accept", "*/*");
+  sendo.setRequestHeader("Content-Type", "application/json");
+  sendo.send(JSON.stringify({colour: thekolor}));
+  } else {
+  window.alert("You forgot to fill one of the fields");
+}
+
+}
+const autoMode = document.querySelector('#autoMode');
+const manualMode = document.querySelector('#manualMode');
+
+autoMode.addEventListener('change', function() {
+  if (this.checked) {
+    bootAuto();
+    objAuto.addColor();
+    objAuto.addPresets();
+  }
+});
+
+manualMode.addEventListener('change', function() {
+  if (this.checked) {
+    bootManual();
+  }
+});
+document.getElementById('thecolour').value = "";
+
+document.getElementById('manualMode').checked = false;
+document.getElementById('autoMode').checked = true;
+bootAuto();
+var objAuto = new C_Auto;
+objAuto.addPresets();
+var vidMode = false;
+function toggleYtVid() {
+    if(vidMode == false) {
+        vidMode = true;
+        document.getElementById("vidThing").style.display = "block";
+    }
+    else  {
+        vidMode = false;
+        document.getElementById("vidThing").style.display = "none";
+    }
+}
+
+</script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+#vidThing {
+    display: none;
+}
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: rgb(240, 240, 240);
+}
+h1 {
+    background: linear-gradient(45deg, rgb(0, 136, 0), lime 50%, white 80%, lime);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+p {
+    margin: 0px;
+}
+#nickolor {
+    color: transparent;
+}
+
+#minus, #stopsModeToggle, #stopsLabel, #orientationGradient, #orientationLabel {
+    display: none;
+}
+
+#thecolour {
+    width: 50%;
+}
+
+header, ul, li, #choice, #colors-inner, #info-form, #info-form article, #preview-span, #preview-span article, #colors-form, footer {
+    background: white;
+    border-radius: 10px;
+    margin: 10px;
+    padding: 10px;
+}
+#info-form {background: rgb(255 220 220)}
+#colors-form {background: rgb(220 255 220)}
+#preview-span {background: rgb(220 220 255)}
+#minus, #plus, #notEvenAButton, #stopsModeToggle, .colorStops {
+    margin: 10px;
+}
+
+#notEvenAButton {
+    margin: auto;
+    width: 20%;
+    text-align: center;
+    background: linear-gradient(90deg, rgb(255, 200, 200), rgb(200, 255, 200), rgb(200, 200, 255));
+    border: 2px solid black;
+    border-radius: 10px;
+    color: black;
+    font-size: 32px;
+    transition: transform 0.3s ease;
+}
+
+#notEvenAButton:hover {
+  cursor: pointer;
+  transform: scale(1.1);
+}
+#zoneStops { display: inline;}
+#notEvenAButton label {text-align: center;}
+</style>
+</body>
+</html>
